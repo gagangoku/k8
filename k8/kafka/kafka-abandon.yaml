@@ -1,0 +1,85 @@
+# DOESN'T WORK !
+# Check README.md for more details.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka-kraft
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-svc
+  labels:
+    app: kafka-app
+  namespace: kafka-kraft
+spec:
+  clusterIP: None
+  ports:
+    - name: '9092'
+      port: 9092
+      protocol: TCP
+      targetPort: 9092
+  selector:
+    app: kafka-app
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  labels:
+    app: kafka-app
+  namespace: kafka-kraft
+spec:
+  serviceName: kafka-svc
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka-app
+  volumeClaimTemplates:
+  - metadata:
+      name: pv-kafka-data
+    spec:
+      accessModes: 
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+  template:
+    metadata:
+      labels:
+        app: kafka-app
+    spec:
+      # Topology constraint to spread across availability zones
+      # topologySpreadConstraints:
+      #   - maxSkew: 1
+      #     topologyKey: kubernetes.io/zone
+      #     whenUnsatisfiable: DoNotSchedule
+      #     labelSelector:
+      #       matchLabels:
+      #         app: kafka-app
+      containers:
+        - name: kafka-container
+          image: gagangoku1/kafka:1.0.4
+          ports:
+            - containerPort: 9092
+            - containerPort: 9093
+          env:
+            - name: REPLICAS
+              value: '3'
+            - name: SERVICE
+              value: kafka-svc
+            - name: NAMESPACE
+              value: kafka-kraft
+            - name: SHARE_DIR
+              value: /var/lib/kafka
+            - name: CLUSTER_ID
+              value: oh-sxaDRTcyAr6pFRbXyzA
+            - name: DEFAULT_REPLICATION_FACTOR
+              value: '3'
+            - name: DEFAULT_MIN_INSYNC_REPLICAS
+              value: '2'
+
+          volumeMounts:
+            - name: pv-kafka-data
+              mountPath: /var/lib/kafka

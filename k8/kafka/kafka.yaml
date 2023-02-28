@@ -1,0 +1,125 @@
+# From https://learnk8s.io/kafka-ha-kubernetes
+# This works!
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka-kraft-ns
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-svc
+  labels:
+    app: kafka-app
+  namespace: kafka-kraft-ns
+spec:
+  clusterIP: None
+  ports:
+    - name: '9092'
+      port: 9092
+      protocol: TCP
+      targetPort: 9092
+  selector:
+    app: kafka-app
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  labels:
+    app: kafka-app
+  namespace: kafka-kraft-ns
+spec:
+  serviceName: kafka-svc
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka-app
+  template:
+    metadata:
+      labels:
+        app: kafka-app
+    spec:
+      containers:
+        - name: kafka-container
+          image: doughgle/kafka-kraft
+          ports:
+            - containerPort: 9092
+            - containerPort: 9093
+          env:
+            - name: REPLICAS
+              value: '3'
+            - name: SERVICE
+              value: kafka-svc
+            - name: NAMESPACE
+              value: kafka-kraft-ns
+            - name: SHARE_DIR
+              value: /mnt/kafka
+            - name: CLUSTER_ID
+              value: oh-sxaDRTcyAr6pFRbXyzB
+            - name: DEFAULT_REPLICATION_FACTOR
+              value: '3'
+            - name: DEFAULT_MIN_INSYNC_REPLICAS
+              value: '2'
+          volumeMounts:
+            - name: data
+              mountPath: /mnt/kafka
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "1Gi"
+---
+# Provectus UI
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kafka-ui
+  labels:
+    app: kafka-ui
+  namespace: kafka-kraft-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-ui
+  template:
+    metadata:
+      labels:
+        app: kafka-ui
+    spec:
+      containers:
+        - name: kafka-ui
+          image: provectuslabs/kafka-ui:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: KAFKA_CLUSTERS_0_NAME
+              value: "local"
+            - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+              value: "kafka-0.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092"
+            - name: KAFKA_CLUSTERS_0_METRICS_PORT
+              value: "9997"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-ui-svc
+  labels:
+    app: kafka-ui
+  namespace: kafka-kraft-ns
+spec:
+  clusterIP: None
+  ports:
+    - name: '8080'
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: kafka-ui
