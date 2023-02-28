@@ -93,7 +93,7 @@ NOTE: Currently provectus UI is running as username password authorization (whic
 I tried oauth2 from https://github.com/provectus/kafka-ui/blob/master/documentation/guides/SSO.md, but container failed:
 
 
-```bash
+```java
 Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository]: Factory method 'clientRegistrationRepository' threw exception; nested exception is java.lang.IllegalArgumentException: registrations cannot be null or empty
  at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:185)
  at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:653)
