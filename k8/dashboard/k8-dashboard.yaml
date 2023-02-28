@@ -329,6 +329,7 @@ subjects:
 
 ---
 
+# Ingress for running kubernetes dashboard on k8.supergroup.ai
 # From https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/docs/examples/auth/oauth-external-auth/dashboard-ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -336,6 +337,9 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
+    # Trying this as suggested by https://stackoverflow.com/a/70705961/2557517
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/auth-response-headers: "authorization"
   name: external-auth-oauth2
   namespace: kubernetes-dashboard
 spec:
@@ -348,13 +352,9 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: echoserver # kubernetes-dashboard # TODO: Fix this
+            name: kubernetes-dashboard # TODO: Fix this
             port:
-              number: 80
-  tls:
-  - hosts:
-    - "k8.supergroup.ai"
-    secretName: secret-supergroup-20221220
+              number: 443
 ---
 
 apiVersion: networking.k8s.io/v1
@@ -440,45 +440,4 @@ spec:
     targetPort: 4180
   selector:
     k8s-app: oauth2-proxy
----
-
-# Echo server - for testing
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: echoserver
-  namespace: kubernetes-dashboard
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: echoserver
-  template:
-    metadata:
-      labels:
-        app: echoserver
-    spec:
-      containers:
-      - image: ealen/echo-server:latest
-        imagePullPolicy: IfNotPresent
-        name: echoserver
-        ports:
-        - containerPort: 80
-        env:
-        - name: PORT
-          value: "80"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: echoserver
-  namespace: kubernetes-dashboard
-spec:
-  ports:
-    - port: 80
-      targetPort: 80
-      protocol: TCP
-  type: ClusterIP
-  selector:
-    app: echoserver
 ---

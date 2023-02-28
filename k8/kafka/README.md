@@ -87,4 +87,34 @@ kubectl run kafka-client --rm -ti --image bitnami/kafka:3.1.0 -- bash
 $ kafka-console-producer.sh --topic test --request-required-acks all --bootstrap-server kafka-0.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092,kafka-1.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092,kafka-2.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092
 $ kafka-console-consumer.sh --topic test --from-beginning --bootstrap-server kafka-0.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092,kafka-1.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092,kafka-2.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092
 ```
-Procectus UI also worked nicely with it.
+Provectus UI also worked nicely with it.
+
+NOTE: Currently provectus UI is running as username password authorization (which is basic).
+I tried oauth2 from https://github.com/provectus/kafka-ui/blob/master/documentation/guides/SSO.md, but container failed:
+
+
+```bash
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository]: Factory method 'clientRegistrationRepository' threw exception; nested exception is java.lang.IllegalArgumentException: registrations cannot be null or empty
+ at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:185)
+ at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:653)
+ ... 55 common frames omitted
+Caused by: java.lang.IllegalArgumentException: registrations cannot be null or empty
+ at org.springframework.util.Assert.notEmpty(Assert.java:470)
+ at org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository.toUnmodifiableConcurrentMap(InMemoryReactiveClientRegistrationRepository.java:83)
+ at org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository.<init>(InMemoryReactiveClientRegistrationRepository.java:65)
+ at com.provectus.kafka.ui.config.auth.OAuthSecurityConfig.clientRegistrationRepository(OAuthSecurityConfig.java:107)
+```
+
+Config was:
+```
+   - name: AUTH_TYPE
+     value: "OAUTH2"
+   - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID
+     value: "rosZIWiUDVCtXiedz6voqIdSA19STdmU"
+   - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET
+     value: "mx3s5Ak2DyvjnsKOLHVZ9nNc5X_K9xkAc7LuMdVlHI6lhD6FtVOONAj9LE4gdNYN"
+   - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_ISSUER_URI
+     value: "https://dev-h3yoouiotrd14lqt.us.auth0.com/"
+   - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_SCOPE
+     value: "openid"
+```
