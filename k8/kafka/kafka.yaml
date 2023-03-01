@@ -103,15 +103,21 @@ spec:
             - name: KAFKA_CLUSTERS_0_NAME
               value: "local"
             - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
-              value: "kafka-0.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092"
+              value: "kafka-0.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092,kafka-1.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092,kafka-2.kafka-svc.kafka-kraft-ns.svc.cluster.local:9092"
             - name: KAFKA_CLUSTERS_0_METRICS_PORT
               value: "9997"
             - name: AUTH_TYPE
               value: "LOGIN_FORM"
             - name: SPRING_SECURITY_USER_NAME
-              value: "kafka-admin"
+              valueFrom:
+                secretKeyRef:
+                  name: provectus-username-pass
+                  key: username
             - name: SPRING_SECURITY_USER_PASSWORD
-              value: "oGLEaDelebOr"
+              valueFrom:
+                secretKeyRef:
+                  name: provectus-username-pass
+                  key: password
             - name: KAFKA_CLUSTERS_0_READONLY
               value: "false"
 ---

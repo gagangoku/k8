@@ -406,16 +406,27 @@ spec:
         - --email-domain=supergroup.ai
         - --upstream=file:///dev/null
         - --http-address=0.0.0.0:4180
-        # Register a new application
-        # https://github.com/settings/applications/new
+        # OAuth2 proxy doesnt work well with Github yet (they haven't implemented get email address 🙄).
+        # Linkedin auth also threw some errors.
+        # Use Google auth. As usual, dont follow google tutorials, they're confusing, cyclical, outdated, plain wrong and just not worth wasting time on.
+        # Here's an article thats old but still works: https://docs.bettyblocks.com/en/articles/1012838-setting-up-google-oauth-2-0-authentication
         env:
         - name: OAUTH2_PROXY_CLIENT_ID
-          value: "112708216598-l80s5fgt20pcb8pvd59mepl6v9ueg3bf.apps.googleusercontent.com"
+          valueFrom:
+            secretKeyRef:
+              name: google-auth-secret
+              key: clientid
         - name: OAUTH2_PROXY_CLIENT_SECRET
-          value: "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"
+          valueFrom:
+            secretKeyRef:
+              name: google-auth-secret
+              key: secret
         # docker run -ti --rm python:3-alpine python -c 'import secrets,base64; print(base64.b64encode(base64.b64encode(secrets.token_bytes(16))));'
         - name: OAUTH2_PROXY_COOKIE_SECRET
-          value: "1+fxCZXjWSL9pED/Pf1IFw=="
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-cookie-secret
+              key: secret
         image: quay.io/oauth2-proxy/oauth2-proxy:latest
         imagePullPolicy: Always
         name: oauth2-proxy

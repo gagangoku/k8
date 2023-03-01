@@ -110,9 +110,9 @@ Config was:
    - name: AUTH_TYPE
      value: "OAUTH2"
    - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID
-     value: "rosZIWiUDVCtXiedz6voqIdSA19STdmU"
+     value: "<client id>"
    - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET
-     value: "mx3s5Ak2DyvjnsKOLHVZ9nNc5X_K9xkAc7LuMdVlHI6lhD6FtVOONAj9LE4gdNYN"
+     value: "<client secret>"
    - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_ISSUER_URI
      value: "https://dev-h3yoouiotrd14lqt.us.auth0.com/"
    - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_SCOPE
