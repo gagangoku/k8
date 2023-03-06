@@ -1,5 +1,6 @@
 # Kafka and its UI running properly locally. The broker is also accessible from outside
 version: "3"
+name: kafka
 
 services:
   kafka:
