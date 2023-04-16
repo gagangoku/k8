@@ -1,0 +1,2 @@
+# docker run -d --add-host=host.docker.internal:host-gateway -p 3010:3000 grafana/grafana-oss
+# But there are way too many bugs in Grafana, so look for an alternative !

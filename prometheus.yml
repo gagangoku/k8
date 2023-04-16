@@ -1,0 +1,9 @@
+# docker run -p 9090:9090 --add-host=host.docker.internal:host-gateway -v /path/to/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+# /Users/gagandeepsingh/work/supergroup/whatsmeow2/supergroupmod/prometheus.yml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+- job_name: go
+  static_configs:
+  - targets: ['localhost:3333', 'localhost:3334', 'host.docker.internal:3333', 'host.docker.internal:3334']
