@@ -1,5 +1,7 @@
 # selenium/standalone-firefox:105.0
 # Partially borrowed from https://www.swtestacademy.com/selenium-kubernetes-scalable-parallel-tests/
+
+# Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -31,3 +33,45 @@ spec:
                 port: 4444
               initialDelaySeconds: 30
               timeoutSeconds: 5
+          resources:
+            requests:
+              memory: "6G"
+              cpu: "2"
+            limits:
+              memory: "8G"
+              cpu: "3"
+          # See https://stackoverflow.com/a/46434614/2557517
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+      volumes:
+        - name: dshm
+          emptyDir:
+              medium: Memory
+
+---
+
+# Service
+kind: Service
+apiVersion: v1
+metadata:
+  name: selenium
+  labels:
+    app: selenium
+spec:
+  ports:
+    - protocol: TCP
+      name: '4444'
+      port: 4444
+      targetPort: 4444
+    - protocol: TCP
+      name: '5900'
+      port: 5900
+      targetPort: 5900
+    - protocol: TCP
+      name: '7900'
+      port: 7900
+      targetPort: 7900
+  selector:
+    app: selenium
+  type: ClusterIP
