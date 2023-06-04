@@ -1,0 +1,110 @@
+# Translated from appsmith docker-compose.yml (https://bit.ly/docker-compose-CE , https://raw.githubusercontent.com/appsmithorg/appsmith-docs/main/website/static/files/community-edition/docker-compose.yml) using kompose convert
+
+# Persistent volume
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: appsmith-claim0
+  name: appsmith-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: appsmith
+  name: appsmith
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: appsmith
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: appsmith
+    spec:
+      containers:
+        - image: index.docker.io/appsmith/appsmith-ce
+          name: appsmith
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+          resources: {}
+          volumeMounts:
+            - mountPath: /appsmith-stacks
+              name: appsmith-claim0
+      restartPolicy: Always
+      volumes:
+        - name: appsmith-claim0
+          persistentVolumeClaim:
+            claimName: appsmith-claim0
+---
+
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: appsmith
+  name: appsmith
+  annotations:
+    cloud.google.com/neg: '{"ingress":true}'
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 80
+    - name: "443"
+      port: 443
+      targetPort: 443
+  selector:
+    io.kompose.service: appsmith
+  type: ClusterIP
+---
+
+# Ingress
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: appsmith-ingress
+spec:
+  tls:
+    - hosts:
+      - appsmith.supergroup.ai
+      secretName: secret-supergroup-20221220
+  ingressClassName: nginx
+  rules:
+    - host: appsmith.supergroup.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: appsmith
+                port:
+                  number: 80
