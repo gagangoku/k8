@@ -1,0 +1,33 @@
+# selenium/standalone-firefox:105.0
+# Partially borrowed from https://www.swtestacademy.com/selenium-kubernetes-scalable-parallel-tests/
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selenium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: selenium
+  template:
+    metadata:
+      labels:
+        app: selenium
+    spec:
+      containers:
+        - name: selenium
+          image: selenium/standalone-firefox:105.0
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 4444
+            - containerPort: 5900
+            - containerPort: 7900
+          env:
+           - name: SE_OPTS
+             value: "--session-timeout 1000000" 
+          livenessProbe:
+              httpGet:
+                path: /wd/hub/status
+                port: 4444
+              initialDelaySeconds: 30
+              timeoutSeconds: 5
