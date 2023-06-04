@@ -142,6 +142,7 @@ spec:
 ---
 # Requires tls secret to be present
 # Create using:
+# $ cd /Users/gagandeepsingh/work/supergroup/liquid-haproxy/ssl/supergroup/20221220/
 # $ kubectl -n kafka-kraft-ns create secret tls secret-supergroup-20221220 --cert=supergroup.nginx.pem --key=supergroup.key
 kind: Ingress
 apiVersion: networking.k8s.io/v1

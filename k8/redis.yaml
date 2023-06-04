@@ -1,0 +1,45 @@
+# docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+
+# From https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  labels:
+    app: redis-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    name: port6379
+  clusterIP: None
+  selector:
+    app: redis-stack-server
+---
+
+# Stateful set
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-stack-server
+spec:
+  selector:
+    matchLabels:
+      app: redis-stack-server # has to match .spec.template.metadata.labels
+  serviceName: "redis-stack-server"
+  replicas: 1
+  minReadySeconds: 10  # by default is 0
+  template:
+    metadata:
+      labels:
+        app: redis-stack-server # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: redis-stack-server
+        image: redis/redis-stack-server:latest
+        ports:
+        - containerPort: 6379
+          name: port6379
+# TODO: Configure persistent volume for Redis
