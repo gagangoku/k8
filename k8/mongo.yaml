@@ -1,13 +1,7 @@
 # docker run --name mongo -d -p 27017:27017 mongo:6
 
-kind: StorageClass
-apiVersion: storage.k8s.io/v1beta1
-metadata:
-  name: fast
-provisioner: kubernetes.io/gce-pd
-parameters:
-  type: pd-ssd
----
+# Setup storage class from storage-class.yaml first
+#
 # Headless Service configuration
 apiVersion: v1
 kind: Service
@@ -47,8 +41,22 @@ spec:
             - mongod
             - "--replSet"
             - rs0
+            - --bind_ip
+            - 0.0.0.0
+            # TODO: Enable auth and address other warnings
           ports:
             - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: password
           volumeMounts:
             - name: mongo-persistent-storage
               mountPath: /data/db
