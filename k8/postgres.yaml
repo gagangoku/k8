@@ -1,1 +1,95 @@
 # docker run -itd -e POSTGRES_USER=gagan -e POSTGRES_PASSWORD=gagan -p 5432:5432 -v /data:/var/lib/postgresql/data postgres:14.2
+
+# From https://www.airplane.dev/blog/deploy-postgres-on-kubernetes
+# To avoid this error:
+# failed to generate container "xxx" spec: failed to generate spec: failed to mkdir "/mnt/data": mkdir /mnt/data: read-only file system
+# use /var/lib/data instead of /mnt/data
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv-volume2
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: fast
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /var/lib/data
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim2
+  labels:
+    app: postgres
+spec:
+  storageClassName: fast
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi  # Sets volume size
+
+---
+# Deployment (not using statefulsets)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:14.2
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: noti
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: psql-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: psql-secret
+                  key: password
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim2
+---
+
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+  clusterIP: None
+  selector:
+    app: postgres
