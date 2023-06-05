@@ -8,7 +8,7 @@
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: postgres-pv-volume2
+  name: postgres-pv-volume4
   labels:
     type: local
     app: postgres
@@ -24,7 +24,7 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: postgres-pv-claim2
+  name: postgres-pv-claim4
   labels:
     app: postgres
 spec:
@@ -53,11 +53,15 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:14.2
+          image: postgres:15.2
+          args: ["-c", "max_connections=500", "-c", "shared_buffers=512MB"]
           imagePullPolicy: "IfNotPresent"
           ports:
             - containerPort: 5432
           env:
+            # TODO: Fix this issue. Currently postgres is not using the persistent volume. Keeps crashing because /var/lib/postgresql/data is not empty so it doesnt initialize the DB, and fails to read the existing data so pods keep crashing
+            - name: PGDATA1
+              value: /var/lib/postgresql/data2
             - name: POSTGRES_DB
               value: noti
             - name: POSTGRES_USER
@@ -71,12 +75,12 @@ spec:
                   name: psql-secret
                   key: password
           volumeMounts:
-            - mountPath: /var/lib/postgresql/data
+            - mountPath: /var/lib/postgresql/data2
               name: postgredb
       volumes:
         - name: postgredb
           persistentVolumeClaim:
-            claimName: postgres-pv-claim2
+            claimName: postgres-pv-claim4
 ---
 
 # Service
