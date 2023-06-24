@@ -1,0 +1,56 @@
+# Cron job to take Postgres backups
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backer-postgres-cron
+spec:
+  schedule: "* */12 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backer-postgres-depl
+              image: gagangoku1/backer-postgres:latest
+              env:
+                - name: GCS_BUCKET
+                  value: "gs://supergroup-db-snapshots/wm-postgres/"
+                - name: GCS_KEY_FILE_PATH
+                  value: "/opt/backer/gcs-key-file/supergroup-gcs-backer-oauth-app-368203.json"
+                - name: SLACK_CHANNEL
+                  valueFrom:
+                    secretKeyRef:
+                      name: slack-secret
+                      key: channel
+                - name: SLACK_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: slack-secret
+                      key: token
+                - name: POSTGRES_HOST
+                  value: "postgres.default.svc.cluster.local"
+                - name: POSTGRES_PORT
+                  value: "5432"
+                - name: POSTGRES_DB
+                  value: "noti"
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: psql-secret
+                      key: username
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: psql-secret
+                      key: password
+              volumeMounts:
+                - mountPath: /opt/backer/gcs-key-file
+                  name: backer-postgres-gcs-key-file
+                  readOnly: true
+          volumes:
+          - configMap:
+              # Create using kubectl create configmap backer-postgres-gcs-key-file --from-file=/opt/noti/supergroup-gcs-backer-oauth-app-368203.json
+              defaultMode: 420
+              name: backer-postgres-gcs-key-file
+            name: backer-postgres-gcs-key-file
