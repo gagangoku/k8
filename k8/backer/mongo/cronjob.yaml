@@ -1,19 +1,46 @@
+# Cron job to take mongo backups
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: test-cron
+  name: backer-mongo-cron
 spec:
-  schedule: "*/10 * * * *"
+  schedule: "* */12 * * *"
   jobTemplate:
     spec:
       template:
         spec:
-          containers:
-          - name: hello
-            image: busybox:1.28
-            imagePullPolicy: IfNotPresent
-            command:
-            - /bin/sh
-            - -c
-            - date; echo Hello from the Kubernetes cluster
           restartPolicy: OnFailure
+          containers:
+            - name: backer-mongo-depl
+              image: gagangoku1/backer-mongo:latest
+              env:
+                - name: GCS_BUCKET
+                  value: "gs://supergroup-db-snapshots/sg-mongo/"
+                - name: GCS_KEY_FILE_PATH
+                  value: "/opt/backer/gcs-key-file/supergroup-gcs-backer-oauth-app-368203.json"
+                - name: SLACK_CHANNEL
+                  valueFrom:
+                    secretKeyRef:
+                      name: slack-secret
+                      key: channel
+                - name: SLACK_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: slack-secret
+                      key: token
+                - name: MONGODB_HOST
+                  value: "mongo-0.mongo.default.svc.cluster.local"
+                - name: MONGODB_PORT
+                  value: "27017"
+                - name: MONGODB_DB
+                  value: "noti"
+              volumeMounts:
+                - mountPath: /opt/backer/gcs-key-file
+                  name: backer-mongo-gcs-key-file
+                  readOnly: true
+          volumes:
+          - configMap:
+              # Create using kubectl create configmap backer-mongo-gcs-key-file --from-file=/opt/noti/supergroup-gcs-backer-oauth-app-368203.json
+              defaultMode: 420
+              name: backer-mongo-gcs-key-file
+            name: backer-mongo-gcs-key-file

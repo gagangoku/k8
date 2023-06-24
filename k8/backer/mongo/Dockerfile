@@ -1,3 +1,5 @@
+# docker build --platform linux/amd64 -t gagangoku1/backer-mongo .
+# docker push gagangoku1/backer-mongo
 FROM mongo:6
 
 RUN apt-get update && apt-get install -y bash curl
