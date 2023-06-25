@@ -4,7 +4,9 @@ kind: CronJob
 metadata:
   name: backer-mongo-cron
 spec:
-  schedule: "* */12 * * *"
+  schedule: "0 1,13 * * *"
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 5
   jobTemplate:
     spec:
       template:
