@@ -5,8 +5,8 @@ metadata:
   name: backer-postgres-cron
 spec:
   schedule: "0 1,13 * * *"
-  successfulJobsHistoryLimit: 5
-  failedJobsHistoryLimit: 5
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:

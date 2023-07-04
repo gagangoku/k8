@@ -54,6 +54,8 @@ spec:
       containers:
         - name: postgres
           image: postgres:15.2
+          # In case you need to ssh into the container without starting postgres
+          # command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
           args: ["-c", "max_connections=500", "-c", "shared_buffers=512MB"]
           imagePullPolicy: "IfNotPresent"
           ports:

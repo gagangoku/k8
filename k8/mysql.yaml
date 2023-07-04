@@ -3,29 +3,29 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: mysql-pv
+  name: mysql-pv3
   labels:
     type: local
 spec:
   storageClassName: manual
   capacity:
-    storage: 5Gi
+    storage: 4Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/mnt/data"
+    path: "/var/lib/data"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-pv-claim
+  name: mysql-pv-claim3
 spec:
   storageClassName: manual
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 4Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -35,19 +35,22 @@ spec:
   selector:
     matchLabels:
       app: mysql
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
         app: mysql
     spec:
       containers:
-        - image: mysql:8.0.32
+        - image: ubuntu/mysql:8.0-20.04_beta #mysql:8.0.32
+          # In case you need to ssh into the container without starting mysql
+          # command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
           name: mysql
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: mysql-root-pw
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: password
           ports:
             - containerPort: 3306
               name: mysql
@@ -57,7 +60,7 @@ spec:
       volumes:
         - name: mysql-persistent-storage
           persistentVolumeClaim:
-            claimName: mysql-pv-claim
+            claimName: mysql-pv-claim3
 ---
 apiVersion: v1
 kind: Service
