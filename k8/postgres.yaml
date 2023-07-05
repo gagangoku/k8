@@ -74,6 +74,8 @@ spec:
                 secretKeyRef:
                   name: psql-secret
                   key: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: postgredb
