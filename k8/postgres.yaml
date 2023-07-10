@@ -1,4 +1,6 @@
-# docker run -itd -e POSTGRES_USER=gagan -e POSTGRES_PASSWORD=gagan -p 5432:5432 -v /data:/var/lib/postgresql/data postgres:14.2
+# USE:
+# docker run -itd -e POSTGRES_USER=gagan -e POSTGRES_PASSWORD=gagan -e POSTGRES_DB=noti -p 5432:5432 postgres:15.2
+# DEPRECATED: docker run -itd -e POSTGRES_USER=gagan -e POSTGRES_PASSWORD=gagan -p 5432:5432 -v /data:/var/lib/postgresql/data postgres:14.2
 
 # From https://www.airplane.dev/blog/deploy-postgres-on-kubernetes
 # To avoid this error:
@@ -61,7 +63,6 @@ spec:
           ports:
             - containerPort: 5432
           env:
-            # NOTE: Dont override PGDATA. Postgres internally declares VOLUME and it will automatically get assigned to a persistent volume
             - name: POSTGRES_DB
               value: noti
             - name: POSTGRES_USER

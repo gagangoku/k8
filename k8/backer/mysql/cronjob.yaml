@@ -1,0 +1,51 @@
+# Cron job to take mysql backups
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backer-mysql-cron
+spec:
+  schedule: "0 1,13 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backer-mysql-depl
+              image: gagangoku1/backer-mysql:latest
+              env:
+                - name: GCS_BUCKET
+                  value: "gs://supergroup-db-snapshots/sg-mysql/"
+                - name: GCS_KEY_FILE_PATH
+                  value: "/opt/backer/gcs-key-file/supergroup-gcs-backer-oauth-app-368203.json"
+                - name: SLACK_CHANNEL
+                  valueFrom:
+                    secretKeyRef:
+                      name: slack-secret
+                      key: channel
+                - name: SLACK_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: slack-secret
+                      key: token
+                - name: MYSQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysql-secret
+                      key: password
+                - name: MYSQL_USER
+                  value: "root"
+                - name: MYSQL_HOST
+                  value: "mysql.default.svc.cluster.local"
+              volumeMounts:
+                - mountPath: /opt/backer/gcs-key-file
+                  name: backer-mysql-gcs-key-file
+                  readOnly: true
+          volumes:
+          - configMap:
+              # Create using kubectl create configmap backer-mysql-gcs-key-file --from-file=/opt/noti/supergroup-gcs-backer-oauth-app-368203.json
+              defaultMode: 420
+              name: backer-mysql-gcs-key-file
+            name: backer-mysql-gcs-key-file

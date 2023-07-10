@@ -58,10 +58,18 @@ spec:
             - name: mysql-persistent-storage
               mountPath: /var/lib/mysql
               subPath: mysqldata
+            - name: mysql-cnf-file
+              mountPath: /etc/mysql/my.cnf
+              subPath: mysql.my.cnf
       volumes:
         - name: mysql-persistent-storage
           persistentVolumeClaim:
             claimName: mysql-pv-claim3
+        - configMap:
+            # Create using kubectl create configmap mysql-cnf-file --from-file=mysql.my.cnf
+            defaultMode: 420
+            name: mysql-cnf-file
+          name: mysql-cnf-file
 ---
 apiVersion: v1
 kind: Service
