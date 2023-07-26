@@ -1,0 +1,32 @@
+# Cron job to run scheduled messages every 10 mins
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scheduled-msgs-cron
+spec:
+  schedule: "*/10 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: scheduled-msgs-depl
+              image: gagangoku1/scheduled-msgs:latest
+              env:
+                - name: GCS_BUCKET
+                  value: "gs://supergroup-db-snapshots/"
+                - name: GCS_KEY_FILE_PATH
+                  value: "/opt/backer/gcs-key-file/supergroup-gcs-backer-oauth-app-368203.json"
+              volumeMounts:
+                - mountPath: /opt/backer/gcs-key-file
+                  name: backer-mongo-gcs-key-file
+                  readOnly: true
+          volumes:
+          - configMap:
+              # Create using kubectl create configmap backer-mongo-gcs-key-file --from-file=/opt/noti/supergroup-gcs-backer-oauth-app-368203.json
+              defaultMode: 420
+              name: backer-mongo-gcs-key-file
+            name: backer-mongo-gcs-key-file
