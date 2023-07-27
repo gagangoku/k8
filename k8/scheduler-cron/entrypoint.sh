@@ -20,4 +20,4 @@ echo $url
 # IMPORTANT:
 # --tries=1 is important, because haproxy client/server timeout means connection will get dropped, and having wget retry can cause scheduled messages to be sent multiple times
 # --method=POST is important because otherwise nginx treats the request as idempotent and retries
-wget -d --method=POST --tries=1 --timeout=120 -nv -O- $url
+wget -d --method=POST --tries=1 --timeout=120 -nv -O- $url || true
