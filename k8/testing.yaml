@@ -1,0 +1,46 @@
+# For testing kubernetes
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: test-server
+  labels:
+    app: test-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-server
+  template:
+    metadata:
+      labels:
+        app: test-server
+    spec:
+      containers:
+        - name: test-server
+          image: ubuntu
+          command:
+            - "sleep"
+            - "604800"
+          env:
+            - name: TEST_ENV
+              value: "vv"
+          volumeMounts:
+          - mountPath: /opt/noti/oauth-app-368203-fd79e743b525.json
+            subPath: oauth-app-368203-fd79e743b525.json
+            name: supergroup-google-application-creds
+            readOnly: true
+          - mountPath: /opt/noti/supergroup-gcs-backer-oauth-app-368203.json
+            subPath: supergroup-gcs-backer-oauth-app-368203.json
+            name: supergroup-gcs-backer-google-application-creds
+            readOnly: true
+      volumes:
+      - configMap:
+          # Create using kubectl create configmap supergroup-google-application-creds --from-file=/opt/noti/oauth-app-368203-fd79e743b525.json
+          defaultMode: 420
+          name: supergroup-google-application-creds
+        name: supergroup-google-application-creds
+      - configMap:
+          # Create using kubectl create configmap supergroup-gcs-backer-google-application-creds --from-file=/opt/noti/supergroup-gcs-backer-oauth-app-368203.json
+          defaultMode: 420
+          name: supergroup-gcs-backer-google-application-creds
+        name: supergroup-gcs-backer-google-application-creds
