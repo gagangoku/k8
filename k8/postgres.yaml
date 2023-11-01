@@ -58,6 +58,8 @@ spec:
           image: postgres:15.2
           # In case you need to ssh into the container without starting postgres
           # command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
+          # After sshing into the container, delete the pgdata directory, and then comment the above line and kubectl apply -f postgres.yaml
+          # This will initialize an empty postgres database where you can import your psql dump file
           args: ["-c", "max_connections=500", "-c", "shared_buffers=512MB"]
           imagePullPolicy: "IfNotPresent"
           ports:
