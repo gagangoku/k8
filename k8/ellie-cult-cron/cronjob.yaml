@@ -1,10 +1,10 @@
-# Cron job to run scheduled messages every 10 mins
+# Cron job to run Cult model on Ellie at 18:40 GMT (00:10 IST)
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: ellie-cult-cron
 spec:
-  schedule: "15 0 * * *"
+  schedule: "40 18 * * *"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 10
   jobTemplate:
