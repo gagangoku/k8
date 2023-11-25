@@ -1,0 +1,17 @@
+# Cron job to run scheduled messages every 10 mins
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ellie-cult-cron
+spec:
+  schedule: "15 0 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 10
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: ellie-cult-cron-depl
+              image: gagangoku1/ellie-cult-cron:latest
