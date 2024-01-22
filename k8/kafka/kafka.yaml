@@ -153,7 +153,7 @@ spec:
   tls:
     - hosts:
       - kafkaui.supergroup.ai
-      secretName: secret-supergroup-20221220
+      secretName: secret-supergroup-20240122
   ingressClassName: nginx
   rules:
     - host: 'kafkaui.supergroup.ai'

@@ -378,7 +378,7 @@ spec:
   tls:
   - hosts:
     - "k8.supergroup.ai"
-    secretName: secret-supergroup-20221220
+    secretName: secret-supergroup-20240122
 ---
 
 # Oauth proxy
