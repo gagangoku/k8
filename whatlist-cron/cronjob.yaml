@@ -1,0 +1,30 @@
+# Cron job to run scheduled messages every minute
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: whatlist-cron
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: whatlist-cron
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - /mnt/whatlist-cron.sh
+            volumeMounts:
+            - mountPath: /mnt/whatlist-cron.sh
+              subPath: whatlist-cron.sh
+              name: whatlist-cron-mount
+              readOnly: true
+          restartPolicy: OnFailure
+          volumes:
+          - configMap:
+              # Create using kubectl create configmap whatlist-cron-mount --from-file=whatlist-cron/whatlist-cron.sh
+              defaultMode: 420
+              name: whatlist-cron-mount
+            name: whatlist-cron-mount
